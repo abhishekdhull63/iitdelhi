@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!--
+    ==========================================================================
+    NEXUS COMMAND CENTER — Premium Editorial Glassmorphism (Gemini Edition)
+    Claw & Shield 2026 | Palantir / Cascaid-Inspired Design
+    ==========================================================================
+    All element IDs preserved for script.js compatibility.
+    -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="AI-powered Disaster Response Triage — NEXUS Emergency Command Center." />
+    <meta name="robots" content="noindex, nofollow" />
+
+    <title>NEXUS Command Center — Disaster Response AI</title>
+
+    <!-- Google Fonts: Playfair Display + Inter + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet" />
+
+    <link rel="stylesheet" href="/static/style.css?v=8" />
+</head>
+
+<body>
+
+    <!-- Ambient background orbs -->
+    <div class="orb orb-1" aria-hidden="true"></div>
+    <div class="orb orb-2" aria-hidden="true"></div>
+    <div class="orb orb-3" aria-hidden="true"></div>
+
+    <!-- ================================================================== -->
+    <!-- FIXED TOP HEADER BAR                                               -->
+    <!-- ================================================================== -->
+    <header id="hero-header" class="header-bar">
+        <div class="header-inner">
+            <div class="header-left">
+                <span class="status-indicator" id="status-indicator">
+                    <span class="status-dot"></span>
+                </span>
+                <span class="header-brand">Nexus Emergency Response</span>
+                <span class="header-sep">/</span>
+                <span class="header-sub">AI Command</span>
+            </div>
+            <div class="header-right">
+                <span class="utc-clock" id="utc-clock"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================================================================== -->
+    <!-- HERO SECTION                                                       -->
+    <!-- ================================================================== -->
+    <section class="hero">
+        <p class="hero-eyebrow">Claw &amp; Shield 2026</p>
+        <h1 class="hero-title">Disaster Response<br />Intelligence</h1>
+        <p class="hero-subtitle">AI-powered triage analysis for emergency situations.<br />Severity assessment and
+            actionable guidance in seconds.</p>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- MAIN CONTENT                                                       -->
+    <!-- ================================================================== -->
+    <main class="main-grid">
+
+        <!-- LEFT: Input Panel -->
+        <section class="panel" aria-label="Emergency Report Input">
+            <div class="panel-head">
+                <h2 class="panel-title">Emergency Report</h2>
+                <span class="char-counter" id="char-counter">0 / 1000</span>
+            </div>
+
+            <form id="report-form" aria-label="Submit emergency report">
+                <!-- Rapid Triage Chips with SVG Icons -->
+                <div id="triage-chips" class="triage-chips">
+                    <button type="button" class="triage-chip"
+                        data-template="Reporting a critical FIRE emergency at [Location]. Smoke visible. Immediate assistance required.">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M12 12c2-2.96 0-7-1-8 0 3.038-1.773 4.741-3 6-1.226 1.26-2 3.24-2 5a6 6 0 1 0 12 0c0-1.532-1.056-3.94-2-5-1.786 3-2.791 3-4 2z" />
+                        </svg>
+                        Fire</button>
+                    <button type="button" class="triage-chip"
+                        data-template="MEDICAL EMERGENCY: Injuries reported. Possible [describe]. Send ambulance NOW.">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 10H6" />
+                            <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                            <path
+                                d="M19 18h2a1 1 0 0 0 1-1v-3.28a1 1 0 0 0-.684-.948l-1.923-.641a1 1 0 0 1-.578-.502l-1.539-3.076A1 1 0 0 0 16.382 9H14" />
+                            <path d="M8 8v4" />
+                            <circle cx="17" cy="18" r="2" />
+                            <circle cx="7" cy="18" r="2" />
+                        </svg>
+                        Medical</button>
+                    <button type="button" class="triage-chip"
+                        data-template="VEHICLE CRASH at [Location]. Multiple vehicles. Check for trapped persons.">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                        </svg>
+                        Crash</button>
+                    <button type="button" class="triage-chip"
+                        data-template="STRUCTURAL COLLAPSE at [Location]. Debris everywhere. Risk of further falls.">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 21h18" />
+                            <path d="M5 21V7l8-4v18" />
+                            <path d="M19 21V11l-6-4" />
+                            <path d="M9 9h1" />
+                            <path d="M9 13h1" />
+                            <path d="M9 17h1" />
+                        </svg>
+                        Collapse</button>
+                </div>
+
+                <textarea id="report-input" class="textarea"
+                    placeholder="Describe the emergency situation in plain language...&#10;&#10;Example: Building collapse in sector 7-G. Three floors&#10;pancaked. Unknown number of trapped residents.&#10;Gas leak detected. Fire department en route."
+                    maxlength="1000" rows="9" required aria-label="Emergency description" autocomplete="off"
+                    spellcheck="true"></textarea>
+
+                <!-- Action Bar: Geo + Dictate + Upload Photo -->
+                <div id="action-bar" class="action-bar">
+                    <button type="button" id="geo-btn" class="action-btn" title="Append GPS coordinates"
+                        aria-label="Append current GPS location to report">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        <span>Location</span>
+                    </button>
+                    <button type="button" id="dictate-btn" class="action-btn" title="Voice dictation (speech-to-text)"
+                        aria-label="Dictate emergency report using voice">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                            <line x1="12" x2="12" y1="19" y2="22" />
+                        </svg>
+                        <span>Dictate</span>
+                    </button>
+                    <button type="button" id="upload-btn" class="action-btn"
+                        title="Upload disaster photo for AI analysis" aria-label="Upload a photo of the disaster">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+                            <circle cx="12" cy="13" r="3" />
+                        </svg>
+                        <span>Upload Photo</span>
+                    </button>
+                    <input type="file" id="photo-input" accept="image/*" capture="environment" hidden
+                        aria-hidden="true" />
+                </div>
+
+                <!-- Image Preview (shown when a photo is selected) -->
+                <div id="image-preview" class="image-preview" style="display: none;">
+                    <img id="preview-thumb" class="preview-thumb" alt="Uploaded disaster photo" />
+                    <div class="preview-info">
+                        <span id="preview-name" class="preview-name">photo.jpg</span>
+                        <button type="button" id="remove-image" class="remove-image-btn"
+                            aria-label="Remove uploaded image">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Terminal loader (shown during analysis by script.js) -->
+                <div id="terminal-loader" class="terminal-loader"></div>
+
+                <button type="submit" id="submit-btn" class="btn-submit">
+                    <span id="btn-text" class="btn-text">Analyze Emergency</span>
+                    <span id="btn-spinner" class="btn-spinner" aria-hidden="true"></span>
+                </button>
+            </form>
+        </section>
+
+        <!-- RIGHT: Results Panel -->
+        <section class="panel" aria-label="Analysis Results">
+            <div class="panel-head">
+                <h2 class="panel-title">Analysis Results</h2>
+            </div>
+
+            <!-- Placeholder -->
+            <div id="results-placeholder" class="placeholder">
+                <div class="placeholder-ring">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+                    </svg>
+                </div>
+                <p class="placeholder-heading">Awaiting Input</p>
+                <p class="placeholder-body">Submit an emergency report to begin triage analysis.</p>
+            </div>
+
+            <!-- Results -->
+            <div id="results-container" class="results-container" style="display: none;">
+                <div id="incident-id" class="incident-id"></div>
+
+                <div style="position: relative; display: flex; justify-content: space-between; align-items:flex-start;">
+                    <div id="severity-badge" class="severity-badge"></div>
+                    <div style="position: relative;">
+                        <button type="button" id="copy-report" class="copy-pill-btn"
+                            aria-label="Copy report to clipboard">📋 Copy Report</button>
+                        <div id="copied-tooltip" class="copied-tooltip">Copied!</div>
+                    </div>
+                </div>
+
+                <h3 class="results-label">Recommended Actions</h3>
+                <div id="actions-list" class="actions-list"></div>
+
+                <div id="reasoning-box" class="reasoning-box">
+                    <div class="reasoning-head">AI Reasoning</div>
+                    <p id="reasoning-text" class="reasoning-body"></p>
+                </div>
+
+                <details class="json-details">
+                    <summary class="json-toggle">View raw JSON</summary>
+                    <pre id="json-output" class="json-pre"></pre>
+                </details>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================================================================== -->
+    <!-- HISTORY                                                            -->
+    <!-- ================================================================== -->
+    <section class="history-section" aria-label="Analysis History">
+        <div class="history-head">
+            <h2 class="panel-title">Recent Analyses</h2>
+            <button id="clear-history-btn" class="btn-ghost" title="Clear history">Clear all</button>
+        </div>
+        <div id="history-list" class="history-list">
+            <p class="history-empty" id="history-empty">No analyses yet. Submit a report to begin.</p>
+        </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- FOOTER                                                             -->
+    <!-- ================================================================== -->
+    <footer class="footer">
+        <p><strong>Disclaimer:</strong> AI triage suggestions only — does not replace professional emergency services.
+            Always call 108/911 for life-threatening situations.</p>
+        <p class="footer-brand">Nexus Command — Claw &amp; Shield 2026</p>
+    </footer>
+
+    <!-- ================================================================== -->
+    <!-- ERROR TOAST                                                        -->
+    <!-- ================================================================== -->
+    <div id="error-toast" class="toast" role="alert" aria-live="assertive">
+        <svg class="toast-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <span id="error-toast-msg"></span>
+        <button class="toast-close" id="toast-close-btn" aria-label="Close">&times;</button>
+    </div>
+
+    <script src="/static/script.js" defer></script>
+</body>
+
+</html>

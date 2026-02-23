@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-02-23T14:10:51.480780+00:00",
+  "run_id": "d358dbedab2347f59c02fc02a39ef8a9",
+  "disaster_category": "logistics",
+  "mission_prompt": "Analyze this flood data and generate a logistics dispatch. Affected zones include sectors 4, 7, and 12 near the river delta. Current resource shortfall: 500 water purification units, 200 rescue boats, 1000 emergency ration packs. Coordinate with Zone Command for evacuation corridors.",
+  "ai_analysis": {
+    "severity": "HIGH",
+    "category": "logistics",
+    "resources_needed": [
+      "water",
+      "food",
+      "shelter",
+      "rescue_teams"
+    ],
+    "affected_zones": [
+      "zone_unspecified"
+    ],
+    "priority_action": "Deploy rapid-response logistics unit",
+    "confidence": 0.75,
+    "_stub": true,
+    "_input_preview": "Analyze this flood data and generate a logistics dispatch. Affected zones include sectors 4, 7, and 12 near the river de"
+  },
+  "enforcement": {
+    "policy_evaluated": true,
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "written_to": "/Users/abhishekdhull/iit delhi/disaster-response-agent/dev_workspace/outgoing_dispatch/dispatch_62e61e89.json"
+  }
+}

@@ -1,0 +1,41 @@
+# =============================================================================
+# .dockerignore — NEXUS Disaster Response Agent
+# Prevents large/sensitive files from being sent to Docker build context.
+# =============================================================================
+
+# Virtual environments and Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+
+# IDE and OS files
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs (generated at runtime, not baked into image)
+*.log
+agent_core.log
+agent_errors.log
+
+# Dev output directories (mounted as volumes at runtime)
+dev_workspace/
+dispatch_output/
+logs/
+
+# Git
+.git/
+.gitignore
+
+# Static frontend (not needed for agent_core.py demo)
+static/
+
+# Docs and extras
+*.md
+*.txt.bak

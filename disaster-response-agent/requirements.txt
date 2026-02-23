@@ -1,0 +1,21 @@
+# =============================================================================
+# requirements.txt — NEXUS Disaster Response Agent
+# Claw & Shield 2026 Hackathon | Python 3.10+
+# Install: pip install -r requirements.txt
+# =============================================================================
+
+# --- Gemini SDK (google-genai — the NEW 2025+ SDK, NOT google-generativeai) --
+# This is the only SDK compatible with genai.Client() used in agent_core.py
+google-genai>=1.0.0
+
+# --- FastAPI stack (main.py web server) ---------------------------------------
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.6
+
+# --- Core utilities -----------------------------------------------------------
+python-dotenv>=1.0.0          # .env loading (GOOGLE_API_KEY)
+Pillow>=10.0.0                # Image decoding for multimodal uploads
+
+# --- Standard library only below — no openclaw pip package exists;
+#     the OpenClaw agent pattern is implemented natively in agent_core.py
