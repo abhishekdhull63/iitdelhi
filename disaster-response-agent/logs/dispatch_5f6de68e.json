@@ -1,0 +1,35 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-23T17:57:00.608361+00:00",
+  "run_id": "20f63d72769c4292a2a15123f18912e7",
+  "model": "gemini-1.5-flash-latest",
+  "disaster_category": "evacuation",
+  "severity": "HIGH",
+  "recommended_actions": [
+    "Deploy rapid-response logistics unit",
+    "Establish supply corridor",
+    "Activate zone command centre"
+  ],
+  "affected_zones": [
+    "zone_unspecified"
+  ],
+  "confidence": 0.75,
+  "mission_briefing": "Analyze this flood data and generate a logistics dispatch. Sectors 4, 7, 12 near the river delta are submerged. Immediate shortfall: 500 water purification units, 200 rescue boats, 1000 ration packs. Coordinate evacuation corridors with Zone Command.",
+  "enforcement": {
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "rule_checked": [
+      "ACTION_TYPE",
+      "MEDICAL_BLOCK",
+      "DIR_SCOPE"
+    ],
+    "reflection_used": false,
+    "reflection_attempts": 0
+  },
+  "delegation": {
+    "commander": "TriageCommander",
+    "sub_agent": "LogisticsSubAgent",
+    "scope": ".json only | logs/ only",
+    "bounded": true
+  }
+}

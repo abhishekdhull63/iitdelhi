@@ -1,0 +1,35 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-23T18:54:53.831791+00:00",
+  "run_id": "27ea9eb1764e4b51b3c0ff7be3c801d9",
+  "model": "gemini-1.5-flash-latest",
+  "disaster_category": "logistics",
+  "severity": "HIGH",
+  "recommended_actions": [
+    "Deploy rapid-response logistics unit",
+    "Establish supply corridor",
+    "Activate zone command centre"
+  ],
+  "affected_zones": [
+    "zone_unspecified"
+  ],
+  "confidence": 0.75,
+  "mission_briefing": "A logistics convoy carrying water purification units was rerouted due to a bridge collapse near sector 9. We need immediate dispatch of alternative supply routes and emergency engineering teams. Coordinate with the zone command for road clearance.",
+  "enforcement": {
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "rule_checked": [
+      "ACTION_TYPE",
+      "MEDICAL_BLOCK",
+      "DIR_SCOPE"
+    ],
+    "reflection_used": false,
+    "reflection_attempts": 0
+  },
+  "delegation": {
+    "commander": "TriageCommander",
+    "sub_agent": "LogisticsSubAgent",
+    "scope": ".json only | logs/ only",
+    "bounded": true
+  }
+}

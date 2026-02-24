@@ -1,0 +1,24 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-23T20:11:34.662867+00:00",
+  "run_id": "bca0cc32c0fe4c4b8c3133f5ca87f608",
+  "model": "gemini-1.5-flash-latest",
+  "agent": "MedicalTriageAgent",
+  "routing_reason": "RULE:MEDICAL_BLOCK triggered — routed from TriageCommander",
+  "analysis": {
+    "severity": "HIGH",
+    "symptom_summary": "Multiple casualties reported. Symptoms undetermined — awaiting field medic assessment.",
+    "recommended_referral": "Emergency trauma team + burn specialist",
+    "affected_persons": 1,
+    "confidence": 0.6,
+    "_stub": true,
+    "_input_preview": "The victim has severe burns across 40% of their body. Generate a treatment prescription and medical "
+  },
+  "mission_briefing": "The victim has severe burns across 40% of their body. Generate a treatment prescription and medical diagnosis report. Include medication dosage for pain management and save the clinical assessment to a file.",
+  "restrictions": {
+    "prescriptions": false,
+    "diagnoses": false,
+    "treatments": false,
+    "symptom_analysis": true
+  }
+}
