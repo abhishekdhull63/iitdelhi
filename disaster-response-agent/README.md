@@ -107,7 +107,7 @@ disaster-response-agent/
 
 | Layer | Technology |
 |---|---|
-| **LLM / AI** | Google Gemini 2.0 Flash (`gemini-2.0-flash`) via `google-genai ≥ 1.0.0` |
+| **LLM / AI** | Google Gemini 3.0 Flash Preview (`gemini-3-flash-preview`) via `google-genai ≥ 1.0.0` |
 | **Search Grounding** | Google Search tool (built-in Gemini tool, zero additional config) |
 | **Web Framework** | Streamlit ≥ 1.42.0 |
 | **Image Processing** | Pillow ≥ 10.0.0 (multimodal upload decoding) |
@@ -333,10 +333,10 @@ All 3 tests exit `0` if they behave as expected, `1` otherwise.
 |---|---|---|---|
 | `agent.py` | `MAX_INPUT_LENGTH` | `1000` | Max characters accepted from the frontend |
 | `agent.py` | `MAX_RETRIES` | `2` | Gemini call retry attempts on schema validation failure |
-| `agent.py` | `PRIMARY_MODEL` | `gemini-2.0-flash` | Gemini model used for triage |
+| `agent.py` | `PRIMARY_MODEL` | `gemini-3-flash-preview` | Gemini model used for triage |
 | `main.py` | `MAX_REPORT_LENGTH` | `1000` | HTTP-layer report length cap |
 | `main.py` | `MAX_IMAGE_SIZE` | `10 MB` | Maximum uploaded image size |
-| `agent_core.py` | `GEMINI_MODEL_NAME` | `gemini-1.5-flash-latest` | Model used by TriageCommander |
+| `agent_core.py` | `GEMINI_MODEL_NAME` | `gemini-3-flash-preview` | Model used by TriageCommander |
 
 ---
 

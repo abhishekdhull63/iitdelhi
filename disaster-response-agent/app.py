@@ -103,6 +103,8 @@ if "app_initialized" not in st.session_state:
     st.session_state.latest_result = None
     st.session_state.mission_counter = 0
     st.session_state.pending_high_volume_mission = None
+    st.session_state.pending_mission_image = None
+    st.session_state.pending_mission_mime = None
 
 # Ensure keys exist for warm reloads
 if "commander" not in st.session_state:
@@ -115,6 +117,10 @@ if "mission_counter" not in st.session_state:
     st.session_state.mission_counter = 0
 if "pending_high_volume_mission" not in st.session_state:
     st.session_state.pending_high_volume_mission = None
+if "pending_mission_image" not in st.session_state:
+    st.session_state.pending_mission_image = None
+if "pending_mission_mime" not in st.session_state:
+    st.session_state.pending_mission_mime = None
 
 
 def add_log_entry(msg_type: str, message: str) -> None:
@@ -125,12 +131,16 @@ def add_log_entry(msg_type: str, message: str) -> None:
     })
 
 
-def process_mission(briefing: str) -> None:
+def process_mission(briefing: str, image_bytes: Optional[bytes] = None, image_mime: Optional[str] = None) -> None:
     """Run the TriageCommander and update the UI state."""
     add_log_entry("INFO", f"▶ INITIATING MISSION [{len(briefing)} chars]")
 
     try:
-        result = st.session_state.commander.run_mission(briefing)
+        result = st.session_state.commander.run_mission(
+            mission_briefing=briefing,
+            image_bytes=image_bytes,
+            image_mime=image_mime
+        )
         st.session_state.latest_result = result
         status = result.get("status", "UNKNOWN")
 
@@ -273,14 +283,22 @@ with col1:
             else:
                 full_briefing = mission_briefing + image_context
                 
+                image_bytes = None
+                image_mime = None
+                if uploaded_file is not None:
+                    image_bytes = uploaded_file.getvalue()
+                    image_mime = uploaded_file.type
+
                 # HUMAN-IN-THE-LOOP (HITL) CHECK
                 dummy_intent = IntentModel(action_type=ActionType.UNKNOWN, raw_text=full_briefing)
                 if check_high_volume(dummy_intent):
                     st.session_state.pending_high_volume_mission = full_briefing
+                    st.session_state.pending_mission_image = image_bytes
+                    st.session_state.pending_mission_mime = image_mime
                     st.rerun()
                 else:
                     with st.spinner("🧠 Triage + Shield Analysis..."):
-                        process_mission(full_briefing)
+                        process_mission(full_briefing, image_bytes, image_mime)
                     # Auto-clear the input field for the next demo run
                     st.session_state.mission_counter += 1
                     st.rerun()
@@ -294,13 +312,21 @@ with col1:
             with c1:
                 if confirm:
                     with st.spinner("🧠 Triage + Shield Analysis..."):
-                        process_mission(st.session_state.pending_high_volume_mission)
+                        process_mission(
+                            st.session_state.pending_high_volume_mission,
+                            st.session_state.pending_mission_image,
+                            st.session_state.pending_mission_mime
+                        )
                     st.session_state.pending_high_volume_mission = None
+                    st.session_state.pending_mission_image = None
+                    st.session_state.pending_mission_mime = None
                     st.session_state.mission_counter += 1
                     st.rerun()
             with c2:
                 if st.button("Cancel", key="cancel_hitl"):
                     st.session_state.pending_high_volume_mission = None
+                    st.session_state.pending_mission_image = None
+                    st.session_state.pending_mission_mime = None
                     st.rerun()
 
 # ── RIGHT: Core Systems Log ────────────────────────────────────────────────

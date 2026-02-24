@@ -50,10 +50,12 @@ import textwrap
 import traceback
 import uuid
 from datetime import datetime, timezone
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 from dotenv import load_dotenv
+from PIL import Image
 
 # --- Gemini SDK (google-genai — new 2025+ SDK) --------------------------------
 try:
@@ -109,9 +111,9 @@ except Exception as _sdk_err:
 # =============================================================================
 
 # ── MODEL ────────────────────────────────────────────────────────────────────
-# UPGRADED: gemini-2.0-flash — 2026 production reasoning model.
-# 1.5-flash returned 404 on v1beta for this API key.
-GEMINI_MODEL_NAME: str = "gemini-1.5-flash-latest"
+# UPGRADED: gemini-3-flash-preview — 2026 production reasoning model.
+# Note: Using the newest flash preview version as requested.
+GEMINI_MODEL_NAME: str = "gemini-3-flash-preview"
 
 # ── SELF-HEALING REFLECTION ──────────────────────────────────────────────────
 REFLECTION_MAX_RETRIES: int = 2
@@ -618,14 +620,21 @@ class TriageCommander:
 
     # ── Gemini Integration ────────────────────────────────────────────────────
 
-    def _call_gemini(self, mission_text: str) -> Dict[str, Any]:
+    def _call_gemini(
+        self,
+        mission_text: str,
+        image_bytes: Optional[bytes] = None,
+        image_mime: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
-        Send the mission briefing to Gemini 2.0 Flash and parse the response.
+        Send the mission briefing to Gemini and parse the response.
 
         Falls back to _stub_analysis() if Gemini is unavailable (offline / CI).
 
         Args:
             mission_text : Free-text emergency description.
+            image_bytes  : Optional bytes for multimodal vision.
+            image_mime   : MIME type of the uploaded image.
 
         Returns:
             dict — Structured triage analysis from Gemini or stub.
@@ -635,9 +644,29 @@ class TriageCommander:
             return self._stub_analysis(mission_text)
 
         try:
+            contents = []
+            if image_bytes and image_mime:
+                try:
+                    img = Image.open(BytesIO(image_bytes))
+                    contents.append(img)
+                    logger.debug("📸 Image loaded for TriageCommander analysis.")
+                    
+                    multi_instruction = (
+                        "\n\nAnalyze this disaster imagery alongside the user's text. "
+                        "Identify the severity of the situation and the immediate resources needed. "
+                        "You must output your response in the exact same JSON format as before, "
+                        "including estimated GPS coordinates if the user provides a location name."
+                    )
+                    contents.append(mission_text + multi_instruction)
+                except Exception as e:
+                    logger.warning("⚠️ Failed to load image for multimodal analysis: %s", e)
+                    contents.append(mission_text)
+            else:
+                contents.append(mission_text)
+
             response = self._client.models.generate_content(
                 model=self.MODEL_NAME,
-                contents=mission_text,
+                contents=contents,
                 config=genai_types.GenerateContentConfig(
                     system_instruction=self.SYSTEM_INSTRUCTION,
                     temperature=0.1,        # Low temp for deterministic triage
@@ -707,7 +736,12 @@ class TriageCommander:
 
     # ── Main Mission Execution ────────────────────────────────────────────────
 
-    def run_mission(self, mission_briefing: str) -> Dict[str, Any]:
+    def run_mission(
+        self,
+        mission_briefing: str,
+        image_bytes: Optional[bytes] = None,
+        image_mime: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Execute a complete triage + delegation mission cycle.
 
@@ -722,6 +756,8 @@ class TriageCommander:
 
         Args:
             mission_briefing : Raw text description of the emergency.
+            image_bytes      : Optional bytes for multimodal vision.
+            image_mime       : MIME type of the uploaded image.
 
         Returns:
             dict — status, mission preview, result/error, rule_id if blocked.
@@ -759,7 +795,7 @@ class TriageCommander:
 
         # ── Step 1: Gemini Triage ─────────────────────────────────────────────
         logger.info("🧠 Step 1/5: Calling Gemini %s for triage...", self.MODEL_NAME)
-        triage: Dict[str, Any] = self._call_gemini(mission_briefing)
+        triage: Dict[str, Any] = self._call_gemini(mission_briefing, image_bytes, image_mime)
         logger.info(
             "🧠 Triage result: severity=%s | category=%s",
             triage.get("severity"), triage.get("category")
@@ -975,7 +1011,7 @@ def _print_result(label: str, result: dict) -> None:
 if __name__ == "__main__":
     print("\n" + "=" * 70)
     print("  🚨  NEXUS v3 — MULTI-AGENT ROUTING + SELF-HEALING DEMO")
-    print("  Claw & Shield 2026 | gemini-1.5-flash-latest | Enforcement Active")
+    print("  Claw & Shield 2026 | gemini-3-flash-preview | Enforcement Active")
     print("=" * 70 + "\n")
 
     commander = TriageCommander()

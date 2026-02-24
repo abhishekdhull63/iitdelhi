@@ -60,7 +60,7 @@ logger = logging.getLogger("NEXUS_AGENT")
 # =============================================================================
 MAX_INPUT_LENGTH: int = 1000
 MAX_RETRIES: int = 2
-PRIMARY_MODEL: str = "gemini-2.0-flash"
+PRIMARY_MODEL: str = "gemini-3-flash-preview"
 VALID_SEVERITIES: set = {"Low", "Medium", "High", "Critical", "Error"}
 MAX_IMAGE_SIZE: int = 10 * 1024 * 1024  # 10 MB
 

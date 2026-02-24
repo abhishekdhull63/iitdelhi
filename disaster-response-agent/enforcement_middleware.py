@@ -33,6 +33,7 @@ Author: NEXUS Team — Claw & Shield 2026
 # =============================================================================
 from __future__ import annotations
 
+import os
 import re
 import logging
 import sqlite3
@@ -56,27 +57,38 @@ _SQLITE_DB_PATH = Path("/app/workspace/security_audit.db")
 def init_db() -> None:
     """Initialize the persistent SQLite audit log table."""
     global _SQLITE_DB_PATH
-    if not _SQLITE_DB_PATH.parent.exists():
+    
+    if isinstance(_SQLITE_DB_PATH, Path) and not _SQLITE_DB_PATH.parent.exists():
         # Dev fallback using the local dev_workspace if we are not in Docker
         dev_workspace = Path(__file__).resolve().parent / "dev_workspace"
         dev_workspace.mkdir(parents=True, exist_ok=True)
         _SQLITE_DB_PATH = dev_workspace / "security_audit.db"
 
-    conn = sqlite3.connect(str(_SQLITE_DB_PATH))
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS audit_logs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT NOT NULL,
-            prompt TEXT NOT NULL,
-            severity TEXT,
-            action TEXT NOT NULL,
-            status TEXT NOT NULL
-        )
-    ''')
-    conn.commit()
-    conn.close()
-    logger.info("🗄️  SQLite Audit DB initialized at %s", _SQLITE_DB_PATH)
+    # Extract the parent directory from the database path and run os.makedirs before connecting
+    if isinstance(_SQLITE_DB_PATH, Path):
+        parent_dir = _SQLITE_DB_PATH.parent
+        os.makedirs(parent_dir, exist_ok=True)
+
+    try:
+        conn = sqlite3.connect(str(_SQLITE_DB_PATH))
+        c = conn.cursor()
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS audit_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                prompt TEXT NOT NULL,
+                severity TEXT,
+                action TEXT NOT NULL,
+                status TEXT NOT NULL
+            )
+        ''')
+        conn.commit()
+        conn.close()
+        logger.info("🗄️  SQLite Audit DB initialized at %s", _SQLITE_DB_PATH)
+    except sqlite3.OperationalError as e:
+        logger.warning("⚠️  SQLITE OPERATIONAL ERROR: %s", e)
+        logger.warning("⚠️  Falling back to in-memory database: sqlite3.connect(':memory:')")
+        _SQLITE_DB_PATH = ":memory:"
 
 def write_audit_log(prompt: str, severity: str, action: str, status: str) -> None:
     """Write a structured event to the SQLite audit database."""

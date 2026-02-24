@@ -19,10 +19,17 @@ env/
 .vscode/
 *.swp
 
-# Logs (generated at runtime, not baked into image)
+# Logs & Local state (generated at runtime, not baked into image)
 *.log
 agent_core.log
 agent_errors.log
+security_audit.db
+*.db
+
+# Secrets
+.env
+.env.*
+
 
 # Dev output directories (mounted as volumes at runtime)
 dev_workspace/
