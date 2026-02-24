@@ -36,46 +36,27 @@ The system is designed around **zero-trust principles**: every input is treated 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      NEXUS COMMAND CENTER                       │
-│                      (Browser Frontend)                         │
+│        (Streamlit Glass-Box Dashboard + HITL Checkbox)          │
 └──────────────────────────┬──────────────────────────────────────┘
-                           │  POST /api/analyze
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        main.py (FastAPI)                        │
-│  • Input validation (length, MIME type)                         │
-│  • CORS middleware                                              │
-│  • Startup Gemini connectivity probe                            │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │
-                           ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   agent.py  (Triage Pipeline)                   │
-│  7-Layer Input Sanitization                                     │
-│  ├─ Type check → Strip → Empty → Length → HTML strip            │
-│  ├─ Prompt Injection Detection (OWASP LLM Top 10)               │
-│  └─ Control character removal                                   │
-│                                                                 │
-│  Gemini 2.0 Flash  (multimodal + Google Search grounding)       │
-│  ├─ Optional image bytes (JPEG / PNG / WebP, ≤10 MB)            │
-│  └─ Retry logic (MAX_RETRIES = 2)                               │
-│                                                                 │
-│  Output Validation                                              │
-│  └─ Schema: severity | recommended_actions (×3) | reasoning     │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │  (agent_core.py — advanced flow)
+                           │  process_mission()
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │              TriageCommander  (agent_core.py)                   │
 │  Gemini reasoning → IntentModel → 🛡️ Shield → SubAgent          │
 │                                                                 │
 │          🛡️  enforcement_middleware.py  (The Shield)            │
+│          ├─ ArmorIQ SDK Bridge  (calls Node.js CLI)             │
 │          ├─ RULE:ACTION_TYPE    allowlist check                  │
 │          ├─ RULE:MEDICAL_BLOCK  keyword + regex scan             │
-│          └─ RULE:DIR_SCOPE      pathlib containment check        │
+│          ├─ RULE:DIR_SCOPE      pathlib containment check        │
+│          └─ 🗄️ SQLite Audit DB   persistent logging (/workspace)  │
 │                                                                 │
 │          LogisticsSubAgent  (Bounded Delegation)                │
 │          ├─ Accepts: .json payloads → writes to /logs/ only      │
 │          └─ Rejects: .py / .sh / .exe → AuthorityExceededError  │
+│                                                                 │
+│          MedicalTriageAgent (Sandboxed Routing)                 │
+│          └─ Accepts: Symptom analysis → writes to /medical_logs/│
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -85,15 +66,15 @@ The system is designed around **zero-trust principles**: every input is treated 
 
 | Feature | Detail |
 |---|---|
+| **ArmorIQ Node.js SDK Bridge** | Hybrid architecture calls the official ArmorIQ OpenClaw SDK via Python `subprocess`, falling back to the local rule engine if offline. |
+| **Enterprise Governance** | Simultaneous implementation of Human-in-the-Loop (HITL) volume limits, persistent SQLite audit logging, and a glass-box live data feed UI. |
 | **Multimodal Analysis** | Upload a disaster photo alongside a text report for visual damage assessment by Gemini |
 | **Real-Time Search Grounding** | Google Search is enabled as a tool — live weather alerts, road closures, and local emergency contacts are included in recommendations |
-| **7-Layer Input Sanitization** | Type check → Strip → Length cap → HTML stripping → Prompt injection detection → Control-char removal |
-| **Prompt Injection Guard** | 15+ regex patterns covering DAN, system prompt overrides, `ignore previous instructions`, `act as`, etc. |
-| **Retry Logic** | Two automatic retry attempts if Gemini returns an invalid/malformed JSON schema |
 | **Bounded Delegation** | `TriageCommander` delegates to `LogisticsSubAgent` which operates under strict Principle of Least Authority (PoLA) |
+| **Self-Healing Reflection Loop** | If the Shield blocks an action (e.g., directory scope violation), the Agent feeds the error back to Gemini to auto-correct and retry. |
 | **Programmatic Shield** | Deterministic, LLM-independent enforcement layer that blocks medical out-of-scope content and filesystem scope violations |
-| **Docker Ready** | Run as a non-root container (`uid=1001`) with dedicated volume-mounted dispatch directories |
-| **Glassmorphism UI** | Fully client-side dashboard (HTML/CSS/JS) with rapid triage chips, copy-for-dispatch button, and analysis history |
+| **Docker Ready** | Run as a non-root container (`uid=1001`) with dedicated volume-mounted dispatch and audit log directories |
+| **Glassmorphism UI** | Streamlit-powered dark-mode dashboard with real-time feedback, HTML log rendering, and live SQLite database visual feeds. |
 
 ---
 
@@ -101,28 +82,23 @@ The system is designed around **zero-trust principles**: every input is treated 
 
 ```
 disaster-response-agent/
-├── main.py                    # FastAPI server — routes /api/analyze and serves frontend
-├── agent.py                   # Core triage pipeline (sanitize → Gemini → validate)
-├── agent_core.py              # Bounded delegation: TriageCommander + LogisticsSubAgent
-├── enforcement_middleware.py  # The Shield — deterministic policy enforcement
+├── app.py                     # Streamlit web dashboard (Glass-Box UI)
+├── agent_core.py              # Bounded delegation: TriageCommander + LogisticsSubAgent + MedicalTriageAgent
+├── enforcement_middleware.py  # The Shield — policy enforcement + SQLite logging + HITL + ArmorIQ SDK Bridge
+├── setup_sdk.py               # Generates ~/.openclaw/openclaw.json for ArmorIQ SDK
+├── main.py                    # Legacy FastAPI server
+├── agent.py                   # Legacy core triage pipeline
 │
-├── static/
-│   ├── index.html             # NEXUS Command Center frontend dashboard
-│   ├── style.css              # Glassmorphism dark-mode UI styles
-│   └── script.js              # Frontend logic (fetch, history, rapid triage chips)
-│
-├── logs/                      # LogisticsSubAgent output directory (created at runtime)
-├── dev_workspace/             # Local dev fallback for dispatch outputs
-│   └── outgoing_dispatch/
+├── dispatch_output/           # Bounded directory for Logistics write actions
+├── medical_logs/              # Bounded directory for Medical write actions
+├── security_audit.db          # Persistent SQLite database storing all Shield routing decisions
 │
 ├── requirements.txt           # Python dependencies
-├── Dockerfile                 # Production container (Python 3.10-slim, non-root)
+├── Dockerfile                 # Production hybrid container (Node 22 + Python 3.10-slim)
 ├── .env.example               # Environment variable template
-├── .env                       # Your secrets (never commit — already in .gitignore)
-├── .gitignore
-├── .dockerignore
+├── .env                       # Your secrets (never commit)
 ├── agent_core.log             # TriageCommander execution logs
-└── agent_errors.log           # FastAPI + agent runtime error log
+└── agent_errors.log           # Runtime error log
 ```
 
 ---
@@ -133,11 +109,11 @@ disaster-response-agent/
 |---|---|
 | **LLM / AI** | Google Gemini 2.0 Flash (`gemini-2.0-flash`) via `google-genai ≥ 1.0.0` |
 | **Search Grounding** | Google Search tool (built-in Gemini tool, zero additional config) |
-| **Web Framework** | FastAPI ≥ 0.115.0 + Uvicorn (ASGI) |
+| **Web Framework** | Streamlit ≥ 1.42.0 |
 | **Image Processing** | Pillow ≥ 10.0.0 (multimodal upload decoding) |
 | **Env Management** | `python-dotenv` ≥ 1.0.0 |
-| **Frontend** | Vanilla HTML5, CSS3 (glassmorphism), ES6 JavaScript |
-| **Container** | Docker — Python 3.10-slim, non-root user |
+| **Data Visualization** | `pandas` for SQLite datafeeds |
+| **Container** | Docker — Python 3.10-slim + Node.js 22 LTS (CLI), non-root user |
 
 ---
 
@@ -173,13 +149,13 @@ cp .env.example .env
 
 ## Running the Application
 
-### Development server
+### Development Server (Streamlit UI)
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+streamlit run app.py
 ```
 
-Open your browser at **[http://localhost:8000](http://localhost:8000)**.
+Open your browser at **[http://localhost:8501](http://localhost:8501)**.
 
 ### Run the bounded delegation test harness
 
@@ -299,33 +275,32 @@ Any single set being fully present in the intent text causes an immediate `Polic
 
 ## Docker Deployment
 
-### Build the image
+### Build the Image
 
 ```bash
 docker build -t nexus-agent .
 ```
 
-### Run the test harness
+### Run the Hybrid Container
+
+Run the Docker container, exposing the Streamlit dashboard and safely mounting all necessary persistence volumes:
 
 ```bash
-docker run --env-file .env nexus-agent
-```
-
-### Run the web server
-
-```bash
-docker run --env-file .env \
-  -p 8000:8000 \
-  -v "$(pwd)/dispatch_output:/app/workspace/outgoing_dispatch" \
-  nexus-agent \
-  uvicorn main:app --host 0.0.0.0 --port 8000
+docker run -d --rm \
+  -p 8501:8501 \
+  -v "$(pwd)/dispatch_output:/app/workspace/outgoing_dispatch"\
+  -v "$(pwd)/medical_logs:/app/workspace/medical_logs"\
+  -v "$(pwd)/security_audit.db:/app/workspace/security_audit.db"\
+  --env-file .env \
+  nexus-agent
 ```
 
 **Security highlights in the Dockerfile:**
-- Base image: `python:3.10-slim` (minimal attack surface)
+- Base image: `python:3.10-slim` (minimal attack surface) with Node.js 22
 - Non-root runtime user: `nexus` (uid/gid 1001)
 - `PYTHONDONTWRITEBYTECODE=1` — no `.pyc` clutter in the image
 - `PYTHONUNBUFFERED=1` — real-time log visibility in container
+- Isolated volume mounts ensure that the agent can ONLY write to specific directories on the host system.
 
 ---
 
