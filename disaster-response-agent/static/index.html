@@ -23,7 +23,7 @@
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
         rel="stylesheet" />
 
-    <link rel="stylesheet" href="/static/style.css?v=8" />
+    <link rel="stylesheet" href="/static/style.css?v=10" />
 </head>
 
 <body>
@@ -44,7 +44,7 @@
                 </span>
                 <span class="header-brand">Nexus Emergency Response</span>
                 <span class="header-sep">/</span>
-                <span class="header-sub">AI Command</span>
+                <span class="header-sub">AI Command — Gemini</span>
             </div>
             <div class="header-right">
                 <span class="utc-clock" id="utc-clock"></span>
@@ -56,10 +56,10 @@
     <!-- HERO SECTION                                                       -->
     <!-- ================================================================== -->
     <section class="hero">
-        <p class="hero-eyebrow">Claw &amp; Shield 2026</p>
+        <p class="hero-eyebrow">ArmorIQ × OpenClaw — Claw &amp; Shield 2026</p>
         <h1 class="hero-title">Disaster Response<br />Intelligence</h1>
-        <p class="hero-subtitle">AI-powered triage analysis for emergency situations.<br />Severity assessment and
-            actionable guidance in seconds.</p>
+        <p class="hero-subtitle">AI-powered triage analysis with multimodal vision, real-time search grounding, and
+            enterprise-grade policy enforcement.</p>
     </section>
 
     <!-- ================================================================== -->
@@ -119,6 +119,9 @@
                         Collapse</button>
                 </div>
 
+                <button type="button" id="gps-inject-btn" class="gps-btn"
+                    aria-label="Inject live GPS coordinates into report">📍 Inject Live GPS</button>
+
                 <textarea id="report-input" class="textarea"
                     placeholder="Describe the emergency situation in plain language...&#10;&#10;Example: Building collapse in sector 7-G. Three floors&#10;pancaked. Unknown number of trapped residents.&#10;Gas leak detected. Fire department en route."
                     maxlength="1000" rows="9" required aria-label="Emergency description" autocomplete="off"
@@ -159,9 +162,16 @@
                         aria-hidden="true" />
                 </div>
 
-                <!-- Image Preview (shown when a photo is selected) -->
+                <!-- Image Preview — Drone/CCTV Feed Overlay -->
                 <div id="image-preview" class="image-preview" style="display: none;">
-                    <img id="preview-thumb" class="preview-thumb" alt="Uploaded disaster photo" />
+                    <div class="drone-feed-container">
+                        <img id="preview-thumb" class="preview-thumb" alt="Uploaded disaster photo" />
+                        <div class="scanlines" aria-hidden="true"></div>
+                        <div class="rec-indicator" aria-hidden="true">● REC</div>
+                        <div class="crosshairs" aria-hidden="true"></div>
+                        <div class="cam-text" aria-hidden="true">UAV-LINK-ACTIVE // NEXUS-SAT-7</div>
+                        <div class="cam-timestamp" aria-hidden="true" id="drone-timestamp"></div>
+                    </div>
                     <div class="preview-info">
                         <span id="preview-name" class="preview-name">photo.jpg</span>
                         <button type="button" id="remove-image" class="remove-image-btn"
@@ -218,10 +228,19 @@
                     <p id="reasoning-text" class="reasoning-body"></p>
                 </div>
 
+                <div id="mission-cost-badge" class="mission-cost-badge" style="display: none;">
+                    <span class="cost-icon">💸</span>
+                    <span id="mission-cost-text" class="cost-text">Mission Cost: —</span>
+                </div>
+
                 <details class="json-details">
                     <summary class="json-toggle">View raw JSON</summary>
                     <pre id="json-output" class="json-pre"></pre>
                 </details>
+
+                <button type="button" id="export-brief-btn" class="export-brief-btn" style="display: none;"
+                    onclick="window.print()" aria-label="Export triage results as PDF">🖨️ Export Secure Brief to
+                    PDF</button>
             </div>
         </section>
 
@@ -246,7 +265,7 @@
     <footer class="footer">
         <p><strong>Disclaimer:</strong> AI triage suggestions only — does not replace professional emergency services.
             Always call 108/911 for life-threatening situations.</p>
-        <p class="footer-brand">Nexus Command — Claw &amp; Shield 2026</p>
+        <p class="footer-brand">Nexus Command — Powered by Gemini AI &amp; ArmorIQ Shield — Claw &amp; Shield 2026</p>
     </footer>
 
     <!-- ================================================================== -->

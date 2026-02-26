@@ -52,6 +52,10 @@ var terminalLoader = document.getElementById("terminal-loader");
 var incidentIdEl = document.getElementById("incident-id");
 var utcClockEl = document.getElementById("utc-clock");
 
+// Mission cost badge elements
+var missionCostBadge = document.getElementById("mission-cost-badge");
+var missionCostText = document.getElementById("mission-cost-text");
+
 // Photo upload elements
 var uploadBtn = document.getElementById("upload-btn");
 var photoInput = document.getElementById("photo-input");
@@ -124,10 +128,11 @@ function insertAtCursor(text) {
 // CINEMATIC TERMINAL LOADER
 // ==========================================================================
 var TERMINAL_MESSAGES = [
-    "> Establishing secure uplink...",
-    "> Scanning input for injection vectors...",
-    "> Transmitting to Gemini neural core...",
-    "> Grounding with real-time search data..."
+    "> Initializing ArmorIQ Shield enforcement layer...",
+    "> Scanning input for injection vectors — CLEAR",
+    "> Transmitting to Gemini neural core via secure uplink...",
+    "> Grounding analysis with real-time search data...",
+    "> Applying disaster triage classification model..."
 ];
 
 function runTerminalSequence() {
@@ -369,6 +374,15 @@ reportForm.addEventListener("submit", async function (event) {
 function renderResults(data) {
     resultsPlaceholder.style.display = "none";
     resultsContainer.style.display = "block";
+    resultsContainer.style.opacity = "0";
+    resultsContainer.style.transform = "translateY(12px)";
+
+    // Trigger reflow for animation
+    void resultsContainer.offsetWidth;
+
+    resultsContainer.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+    resultsContainer.style.opacity = "1";
+    resultsContainer.style.transform = "translateY(0)";
 
     var severity = data.severity || "Unknown";
     var cssClass = getSeverityCSSClass(severity);
@@ -396,6 +410,23 @@ function renderResults(data) {
 
     reasoningText.textContent = data.reasoning || "No reasoning provided.";
     jsonOutput.textContent = JSON.stringify(data, null, 2);
+
+    // Mission Cost Badge
+    if (missionCostBadge && missionCostText && data.total_mission_cost != null) {
+        var cost = "$" + data.total_mission_cost.toFixed(6);
+        var tokens = data.total_tokens || 0;
+        missionCostText.textContent = "Mission Cost: " + cost + "  (" + tokens + " tokens)";
+        missionCostBadge.style.display = "flex";
+    } else if (missionCostBadge) {
+        missionCostBadge.style.display = "none";
+    }
+
+    // Show Export Brief button
+    var exportBtn = document.getElementById("export-brief-btn");
+    if (exportBtn) exportBtn.style.display = "inline-flex";
+
+    // Haptic feedback on supported devices
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 }
 
 function getSeverityCSSClass(severity) {
@@ -786,4 +817,67 @@ if (dictateBtn) {
             }
         });
     }
+}
+
+// ==========================================================================
+// FEATURE: 1-CLICK GPS TELEMETRY INJECTION
+// ==========================================================================
+var gpsInjectBtn = document.getElementById("gps-inject-btn");
+
+function injectGPS() {
+    if (!gpsInjectBtn) return;
+
+    var originalText = gpsInjectBtn.textContent;
+    gpsInjectBtn.textContent = "📍 Locating...";
+    gpsInjectBtn.disabled = true;
+
+    if (!navigator.geolocation) {
+        reportInput.value += "\n[Live Telemetry: OFFLINE - Manual Entry Required]";
+        reportInput.dispatchEvent(new Event("input"));
+        gpsInjectBtn.textContent = "⚠️ GPS Offline";
+        setTimeout(function () {
+            gpsInjectBtn.textContent = originalText;
+            gpsInjectBtn.disabled = false;
+        }, 2000);
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function (position) {
+            var lat = position.coords.latitude.toFixed(4);
+            var lon = position.coords.longitude.toFixed(4);
+            reportInput.value += "\n[Live Telemetry: " + lat + "° N, " + lon + "° E]";
+            reportInput.dispatchEvent(new Event("input"));
+            gpsInjectBtn.textContent = "✅ GPS Injected";
+            setTimeout(function () {
+                gpsInjectBtn.textContent = originalText;
+                gpsInjectBtn.disabled = false;
+            }, 2000);
+        },
+        function () {
+            reportInput.value += "\n[Live Telemetry: OFFLINE - Manual Entry Required]";
+            reportInput.dispatchEvent(new Event("input"));
+            gpsInjectBtn.textContent = "⚠️ GPS Offline";
+            setTimeout(function () {
+                gpsInjectBtn.textContent = originalText;
+                gpsInjectBtn.disabled = false;
+            }, 2000);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
+if (gpsInjectBtn) {
+    gpsInjectBtn.addEventListener("click", injectGPS);
+}
+
+// ==========================================================================
+// DRONE FEED TIMESTAMP TICKER
+// ==========================================================================
+var droneTs = document.getElementById("drone-timestamp");
+if (droneTs) {
+    setInterval(function () {
+        var d = new Date();
+        droneTs.textContent = d.toISOString().replace("T", " ").substring(0, 19) + " UTC";
+    }, 1000);
 }

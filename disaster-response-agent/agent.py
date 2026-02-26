@@ -64,6 +64,10 @@ PRIMARY_MODEL: str = "gemini-3-flash-preview"
 VALID_SEVERITIES: set = {"Low", "Medium", "High", "Critical", "Error"}
 MAX_IMAGE_SIZE: int = 10 * 1024 * 1024  # 10 MB
 
+# Token pricing (Gemini Flash — per 1M tokens)
+PROMPT_COST_PER_M: float = 0.075   # $0.075 per 1,000,000 prompt tokens
+CANDID_COST_PER_M: float = 0.30    # $0.30  per 1,000,000 candidate tokens
+
 # =============================================================================
 # INJECTION DETECTION PATTERN — PHRASE-BASED (OWASP LLM Top 10)
 # =============================================================================
@@ -92,7 +96,15 @@ HTML_TAG_PATTERN: re.Pattern = re.compile(r"<[^>]*>")
 # =============================================================================
 # SYSTEM PROMPT — Gemini + Google Search Grounding
 # =============================================================================
-SYSTEM_PROMPT: str = """You are DisasterResponseBot, a safety-first AI for emergency triage. Analyze ONLY the user report provided. Rules (NEVER VIOLATE):
+SYSTEM_PROMPT: str = """You are DisasterResponseBot, a safety-first AI for emergency triage. You exist EXCLUSIVELY to analyze disaster, emergency, and crisis situations. You are NOT a general-purpose assistant.
+
+SCOPE RESTRICTION (HIGHEST PRIORITY — NEVER VIOLATE):
+- You ONLY respond to inputs that are related to disasters, emergencies, crises, natural calamities, accidents, humanitarian incidents, or safety threats.
+- If the user's input is casual conversation, general knowledge, small talk, or ANY topic unrelated to a disaster/emergency (e.g., "How is the weather?", "Tell me a joke", "What is the capital of France?", "Write me a poem", "What time is it?"), you MUST refuse and return:
+  {"severity": "Low", "recommended_actions": ["Please submit an actual emergency or disaster report", "Describe the crisis situation clearly", "Include location and nature of the emergency"], "reasoning": "This system is exclusively designed for disaster and emergency response triage. Your input does not describe a disaster or emergency scenario. Please provide a real emergency report for analysis."}
+- Do NOT answer general questions, provide weather forecasts, engage in conversation, or perform any task outside disaster/emergency triage. EVER.
+
+TRIAGE RULES:
 - NO medical/health advice—NEVER diagnose, treat, or suggest care.
 - If "injur*","hurt","bleed*","medical","hospital","ambulance" detected: respond with severity "Critical", actions ["Call 108/911 immediately", "Dispatch ambulance", "Do NOT move victim"], reasoning "Physical injuries detected. Medical pros required first."
 - Severity: Low (minor issue), Medium (urgent but non-life), High (immediate danger), Critical (life-threatening).
@@ -262,6 +274,29 @@ def _call_gemini(
 
         parsed: dict = json.loads(raw_content)
         logger.debug("✅ JSON parsed successfully: severity=%s", parsed.get('severity', '???'))
+
+        # ── Token Usage & Cost Extraction ──
+        try:
+            usage = getattr(response, 'usage_metadata', None)
+            if usage:
+                prompt_tokens = getattr(usage, 'prompt_token_count', 0) or 0
+                candidate_tokens = getattr(usage, 'candidates_token_count', 0) or 0
+                total_tokens = prompt_tokens + candidate_tokens
+                total_cost = (
+                    (prompt_tokens / 1_000_000) * PROMPT_COST_PER_M
+                    + (candidate_tokens / 1_000_000) * CANDID_COST_PER_M
+                )
+                parsed["total_tokens"] = total_tokens
+                parsed["total_mission_cost"] = round(total_cost, 6)
+                logger.info(
+                    "💰 Token usage: prompt=%d, candidate=%d, total=%d, cost=$%.6f",
+                    prompt_tokens, candidate_tokens, total_tokens, total_cost,
+                )
+            else:
+                logger.debug("ℹ️ No usage_metadata on response — skipping cost tracking")
+        except Exception as tok_err:
+            logger.warning("⚠️ Token cost extraction failed (non-fatal): %s", tok_err)
+
         return parsed
 
     except json.JSONDecodeError as jde:

@@ -567,9 +567,26 @@ class TriageCommander:
         Your ONLY role is to analyse emergency situation reports and produce
         a structured JSON triage summary for logistics use.
 
+        You are NOT a general-purpose assistant. You exist EXCLUSIVELY for
+        disaster and emergency response.
+
+        SCOPE RESTRICTION (HIGHEST PRIORITY — NEVER VIOLATE):
+        - You ONLY respond to inputs related to disasters, emergencies, crises,
+          natural calamities, accidents, humanitarian incidents, or safety threats.
+        - If the user's input is casual conversation, general knowledge, small talk,
+          or ANY topic unrelated to a disaster/emergency (e.g., "How is the weather?",
+          "Tell me a joke", "What is the capital of France?", "Write me a poem"),
+          you MUST return:
+          - "severity": "LOW"
+          - "category": "OFF_TOPIC"
+          - "recommended_actions": []
+          - "affected_zones": []
+          - "confidence": 1.0
+        - Do NOT answer general questions, provide weather forecasts, engage in
+          conversation, or perform any task outside disaster/emergency triage. EVER.
+
         BASELINE/IDLE STATE:
-        If the user input is a simple greeting (e.g., "hi", "hello") or is completely
-        irrelevant to an emergency/disaster scenario, you MUST return:
+        If the user input is a simple greeting (e.g., "hi", "hello"), you MUST return:
         - "severity": "LOW"
         - "category": "GREETING"
         - "recommended_actions": []
@@ -578,7 +595,7 @@ class TriageCommander:
         Output ONLY a valid JSON object with these exact keys:
         {
             "severity":            "CRITICAL" | "HIGH" | "MEDIUM" | "LOW",
-            "category":            string (e.g. "flood", "earthquake", "GREETING"),
+            "category":            string (e.g. "flood", "earthquake", "GREETING", "OFF_TOPIC"),
             "recommended_actions": [list of logistics strings — max 5],
             "affected_zones":      [list of zone identifiers],
             "confidence":          float (0.0 to 1.0)
@@ -801,13 +818,26 @@ class TriageCommander:
             triage.get("severity"), triage.get("category")
         )
 
-        # ── Step 1.5: LLM-level GREETING fallback ────────────────────────────
+        # ── Step 1.5: LLM-level GREETING / OFF_TOPIC fallback ─────────────────
         if triage.get("category") == "GREETING":
             logger.info("👋 LLM classified as GREETING. Halting dispatch.")
             return {
                 "status":   "SUCCESS",
                 "mission":  mission_briefing[:100],
                 "result":   "NEXUS Systems Online. Standing by for emergency mission briefing.",
+                "triage":   triage,
+            }
+
+        if triage.get("category") == "OFF_TOPIC":
+            logger.info("🚫 LLM classified as OFF_TOPIC. Refusing non-disaster query.")
+            return {
+                "status":   "REFUSED",
+                "mission":  mission_briefing[:100],
+                "result":   (
+                    "⚠️ This system is exclusively designed for disaster and emergency "
+                    "response triage. Your input does not describe a disaster or emergency "
+                    "scenario. Please provide a real emergency report for analysis."
+                ),
                 "triage":   triage,
             }
 
@@ -977,6 +1007,7 @@ def _print_result(label: str, result: dict) -> None:
         "ROUTED_TO_MEDICAL": "🏥",
         "BLOCKED_BY_SHIELD": "🛑",
         "BLOCKED_BY_SUB_AGENT": "🚫",
+        "REFUSED": "⚠️",
     }.get(result["status"], "⚠️")
     print(f"\n{sep}")
     print(f"  {icon}  {label}")
