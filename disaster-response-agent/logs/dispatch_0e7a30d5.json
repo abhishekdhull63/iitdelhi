@@ -1,0 +1,35 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-27T01:25:15.765877+00:00",
+  "run_id": "78912f3579384d6793992af511635de5",
+  "model": "gemini-3-flash-preview",
+  "disaster_category": "earthquake",
+  "severity": "HIGH",
+  "recommended_actions": [
+    "Deploy rapid-response logistics unit",
+    "Establish supply corridor",
+    "Activate zone command centre"
+  ],
+  "affected_zones": [
+    "zone_unspecified"
+  ],
+  "confidence": 0.75,
+  "mission_briefing": "earthquake!!!!\n[ATTACHMENT: 'WhatsApp Image 2026-02-24 at 14.21.37.jpeg']",
+  "enforcement": {
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "rule_checked": [
+      "ACTION_TYPE",
+      "MEDICAL_BLOCK",
+      "DIR_SCOPE"
+    ],
+    "reflection_used": false,
+    "reflection_attempts": 0
+  },
+  "delegation": {
+    "commander": "TriageCommander",
+    "sub_agent": "LogisticsSubAgent",
+    "scope": ".json only | logs/ only",
+    "bounded": true
+  }
+}

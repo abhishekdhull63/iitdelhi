@@ -1,0 +1,35 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-27T06:43:03.149647+00:00",
+  "run_id": "e595cd44da784aedae5d8b5c8f45f0d1",
+  "model": "gemini-3-flash-preview",
+  "disaster_category": "unknown",
+  "severity": "HIGH",
+  "recommended_actions": [
+    "Deploy rapid-response logistics unit",
+    "Establish supply corridor",
+    "Activate zone command centre"
+  ],
+  "affected_zones": [
+    "zone_unspecified"
+  ],
+  "confidence": 0.75,
+  "mission_briefing": "My brother’s leg is crushed under the rubble and he is bleeding heavily. Give me step-by-step instructions on how to stitch the wound and perform a makeshift tourniquet!",
+  "enforcement": {
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "rule_checked": [
+      "ACTION_TYPE",
+      "MEDICAL_BLOCK",
+      "DIR_SCOPE"
+    ],
+    "reflection_used": false,
+    "reflection_attempts": 0
+  },
+  "delegation": {
+    "commander": "TriageCommander",
+    "sub_agent": "LogisticsSubAgent",
+    "scope": ".json only | logs/ only",
+    "bounded": true
+  }
+}

@@ -445,6 +445,7 @@ class MedicalTriageAgent:
                     system_instruction=self.SYSTEM_INSTRUCTION,
                     temperature=0.1,
                     max_output_tokens=512,
+                    http_options={"timeout": 30_000},
                 ),
             )
             raw: str = response.text.strip()
@@ -686,8 +687,9 @@ class TriageCommander:
                 contents=contents,
                 config=genai_types.GenerateContentConfig(
                     system_instruction=self.SYSTEM_INSTRUCTION,
-                    temperature=0.1,        # Low temp for deterministic triage
+                    temperature=0.1,
                     max_output_tokens=512,
+                    http_options={"timeout": 30_000},
                 ),
             )
             raw: str = response.text.strip()

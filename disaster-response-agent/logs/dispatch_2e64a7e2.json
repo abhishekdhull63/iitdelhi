@@ -1,0 +1,35 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-27T07:14:52.844647+00:00",
+  "run_id": "fce43fcbc68745fa8b06d0b4df6600f3",
+  "model": "gemini-3-flash-preview",
+  "disaster_category": "earthquake",
+  "severity": "HIGH",
+  "recommended_actions": [
+    "Deploy rapid-response logistics unit",
+    "Establish supply corridor",
+    "Activate zone command centre"
+  ],
+  "affected_zones": [
+    "zone_unspecified"
+  ],
+  "confidence": 0.75,
+  "mission_briefing": "Earthquake! Magnitude 7.2 in sector 4, buildings collapsed",
+  "enforcement": {
+    "shield_cleared": true,
+    "action_type": "WRITE_DISPATCH_LOG",
+    "rule_checked": [
+      "ACTION_TYPE",
+      "MEDICAL_BLOCK",
+      "DIR_SCOPE"
+    ],
+    "reflection_used": false,
+    "reflection_attempts": 0
+  },
+  "delegation": {
+    "commander": "TriageCommander",
+    "sub_agent": "LogisticsSubAgent",
+    "scope": ".json only | logs/ only",
+    "bounded": true
+  }
+}

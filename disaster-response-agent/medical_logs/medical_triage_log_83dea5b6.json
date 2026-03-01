@@ -1,0 +1,24 @@
+{
+  "schema_version": "3.0.0",
+  "generated_at_utc": "2026-02-27T07:21:13.692211+00:00",
+  "run_id": "dcaba023855349e186b414b6d2fe4935",
+  "model": "gemini-3-flash-preview",
+  "agent": "MedicalTriageAgent",
+  "routing_reason": "RULE:MEDICAL_BLOCK triggered — routed from TriageCommander",
+  "analysis": {
+    "severity": "HIGH",
+    "symptom_summary": "Multiple casualties reported. Symptoms undetermined — awaiting field medic assessment.",
+    "recommended_referral": "Emergency trauma team + burn specialist",
+    "affected_persons": 1,
+    "confidence": 0.6,
+    "_stub": true,
+    "_input_preview": "we need to provide clinical diagnosis , medical treatment and presciption medication to the patients"
+  },
+  "mission_briefing": "we need to provide clinical diagnosis , medical treatment and presciption medication to the patients immediately\n[ATTACHMENT: 'WhatsApp Image 2026-02-24 at 14.21.37.jpeg']",
+  "restrictions": {
+    "prescriptions": false,
+    "diagnoses": false,
+    "treatments": false,
+    "symptom_analysis": true
+  }
+}

@@ -4,7 +4,8 @@ Glassmorphism + st.components.v1.html() for GUARANTEED HTML rendering
 """
 import time
 import sqlite3
-from typing import Dict
+from datetime import datetime, timedelta
+from typing import Dict, Optional
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -88,6 +89,49 @@ h1, h2, h3 {
     border-color: #06b6d4 !important;
     box-shadow: 0 0 0 1px #06b6d4 !important;
 }
+
+/* ═══════════ DRONE / CCTV FEED OVERLAY ═══════════ */
+div[data-testid="stImage"] {
+    position: relative;
+    border: 1px solid rgba(0, 255, 204, 0.25) !important;
+    border-radius: 8px !important;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.08);
+}
+/* Scanlines */
+div[data-testid="stImage"]::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+/* Blinking REC dot */
+div[data-testid="stImage"]::after {
+    content: "● REC";
+    position: absolute;
+    top: 10px; right: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ff3b3b;
+    letter-spacing: 1.5px;
+    text-shadow: 0 0 6px rgba(255,59,59,0.6);
+    z-index: 3;
+    animation: recBlink 1.2s ease-in-out infinite;
+}
+@keyframes recBlink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.15; }
+}
+/* Desaturate image for surveillance look */
+div[data-testid="stImage"] img {
+    filter: saturate(0.65) brightness(0.85) contrast(1.15) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -124,8 +168,9 @@ if "pending_mission_mime" not in st.session_state:
 
 
 def add_log_entry(msg_type: str, message: str) -> None:
+    ist_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
     st.session_state.shield_log.append({
-        "time": time.strftime("%H:%M:%S"),
+        "time": ist_now.strftime("%H:%M:%S"),
         "type": msg_type,
         "message": message,
     })
@@ -257,7 +302,7 @@ with col1:
         if uploaded_file is not None:
             try:
                 image = Image.open(uploaded_file)
-                st.image(image, caption="Field Attachment", use_container_width=True)
+                st.image(image, caption="UAV-LINK-ACTIVE // NEXUS-SAT-7", use_container_width=True)
                 image_context = f"\n[ATTACHMENT: '{uploaded_file.name}']"
                 add_log_entry("INFO", f"📎 Attachment loaded: {uploaded_file.name}")
             except Exception as e:
@@ -353,8 +398,8 @@ with col2:
             conn.close()
             
             if not df.empty:
-                # Format timestamp for better display
-                df['timestamp'] = pd.to_datetime(df['timestamp']).dt.strftime('%H:%M:%S')
+                # Convert UTC timestamps to IST for display
+                df['timestamp'] = (pd.to_datetime(df['timestamp']) + timedelta(hours=5, minutes=30)).dt.strftime('%H:%M:%S IST')
                 st.dataframe(df, use_container_width=True, hide_index=True)
             else:
                 st.info("No audit logs available yet.")
@@ -382,13 +427,76 @@ if res:
         with st.expander("View Violation Details", expanded=True):
             st.info(res.get("error", "Unknown violation"))
 
+    # ── Token Cost Tracker ──
+    triage_data = res.get("triage", res.get("analysis", {}))
+    if isinstance(triage_data, dict) and triage_data.get("total_mission_cost") is not None:
+        cost = triage_data["total_mission_cost"]
+        tokens = triage_data.get("total_tokens", 0)
+        st.caption(f"💸 **Mission Cost:** ${cost:.6f}  ·  **Tokens:** {tokens}")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GPS INJECTION + PDF EXPORT (Browser-side via HTML component)
+# ─────────────────────────────────────────────────────────────────────────────
+gps_pdf_html = """
+<div style="display:flex;gap:10px;margin:12px 0;flex-wrap:wrap;">
+    <button onclick="getLocation()" style="
+        padding:8px 18px; background:rgba(0,255,204,0.08); color:#00ffcc;
+        border:1px solid rgba(0,255,204,0.25); border-radius:100px;
+        font-family:'Courier New',monospace; font-size:12px; font-weight:700;
+        cursor:pointer; letter-spacing:0.5px;
+    ">📍 Inject Live GPS</button>
+    <button onclick="window.top.print()" style="
+        padding:8px 18px; background:rgba(0,204,106,0.08); color:#00ff88;
+        border:1px solid rgba(0,204,106,0.25); border-radius:100px;
+        font-family:'Courier New',monospace; font-size:12px; font-weight:700;
+        cursor:pointer; letter-spacing:0.5px;
+    ">🖨️ Export Secure Brief</button>
+    <span id="gps-status" style="
+        font-family:'Courier New',monospace; font-size:11px; color:#6b7280;
+        display:flex; align-items:center;
+    "></span>
+</div>
+<script>
+function getLocation() {
+    var s = document.getElementById('gps-status');
+    s.textContent = '📍 Locating...';
+    if (!navigator.geolocation) {
+        appendToTextarea('[Live Telemetry: OFFLINE - Manual Entry Required]');
+        s.textContent = '⚠️ GPS Offline';
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(function(pos) {
+        var lat = pos.coords.latitude.toFixed(4);
+        var lon = pos.coords.longitude.toFixed(4);
+        appendToTextarea('[Live Telemetry: ' + lat + '° N, ' + lon + '° E]');
+        s.textContent = '✅ GPS Injected';
+        setTimeout(function(){ s.textContent = ''; }, 2500);
+    }, function() {
+        appendToTextarea('[Live Telemetry: OFFLINE - Manual Entry Required]');
+        s.textContent = '⚠️ GPS Offline';
+        setTimeout(function(){ s.textContent = ''; }, 2500);
+    }, { enableHighAccuracy: true, timeout: 10000 });
+}
+function appendToTextarea(text) {
+    var ta = window.parent.document.querySelector('.stTextArea textarea');
+    if (ta) {
+        var nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLTextAreaElement.prototype, 'value').set;
+        nativeInputValueSetter.call(ta, ta.value + '\\n' + text);
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}
+</script>
+"""
+components.html(gps_pdf_html, height=55)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # FOOTER
 # ─────────────────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown(
     "<div style='text-align:center;color:#6b7280;font-size:0.9em;'>"
-    "*Powered by OpenClaw + Gemini 1.5 | Shield Middleware Active*"
+    "*Powered by OpenClaw + Gemini AI | Shield Middleware Active | ArmorIQ Enforced*"
     "</div>",
     unsafe_allow_html=True,
 )
