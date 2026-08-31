@@ -1,5 +1,5 @@
 # 🚨 NEXUS — Disaster Response AI Agent
-### Claw & Shield 2026 Hackathon
+
 
 > **AI-powered emergency triage with multimodal vision, real-time search grounding, and a programmatic safety enforcement layer (The Shield).**
 
